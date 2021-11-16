@@ -6,9 +6,9 @@
 
 bool Game::Start()
 {
-	NewGO<Player>(0, "player");
-	NewGO<Stage>(0, "stage");
-	NewGO<GameCamera>(0, "gameCamera");
+	m_player = NewGO<Player>(0, "player");
+	m_stage = NewGO<Stage>(0, "stage");
+	m_gameCamera = NewGO<GameCamera>(0, "gameCamera");
 
 	return true;
 }

@@ -4,7 +4,6 @@
 #include "Game.h"
 
 
-
 GameCamera::~GameCamera()
 {
 
