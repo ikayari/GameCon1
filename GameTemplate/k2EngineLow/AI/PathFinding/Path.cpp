@@ -10,21 +10,22 @@ namespace nsK2EngineLow {
 			for (int pointNo = 0; pointNo < m_pointArray.size() - 1; pointNo++) {
 				auto& section = m_sectionArray.at(pointNo);
 				section.startPos = m_pointArray.at(pointNo);
-				section.endPos = m_pointArray.at(pointNo+1);
+				section.endPos = m_pointArray.at(pointNo + 1);
 				section.direction = section.endPos - section.startPos;
 				section.length = section.direction.Length();
 				section.direction.Normalize();
 			}
 		}
 		Vector3 Path::Move(
-			Vector3 pos, 
-			float moveSpeed, 
+			Vector3 pos,
+			float moveSpeed,
 			bool& isEnd,
+			Vector3& velocity,
 			PhysicsWorld* physicsWorld
-		){
-			if (m_sectionArray.empty() 
-				|| m_sectionNo >= m_sectionArray.size() 
-			) {
+		) {
+			if (m_sectionArray.empty()
+				|| m_sectionNo >= m_sectionArray.size()
+				) {
 				// パスが構築されていない
 				return pos;
 			}
@@ -32,6 +33,7 @@ namespace nsK2EngineLow {
 			// セクションの終点に向かうベクトルを計算する。
 			Vector3 toEnd = currentSection.endPos - pos;
 			toEnd.Normalize();
+			velocity = toEnd;
 			pos += toEnd * moveSpeed;
 
 			Vector3 toEnd2 = currentSection.endPos - pos;

@@ -9,11 +9,103 @@ public:
 	bool Start();
 	void Update();
 	void Render(RenderContext& rc);
+
+	/// <summary>
+	/// 座標を取得する。
+	/// </summary>
+	/// <returns>座標。</returns>
+	const Vector3& GetPosition() const
+	{
+		return m_position;
+	}
+	/// <summary>
+	/// 座標を設定する。
+	/// </summary>
+	/// <param name="position">座標。</param>
+	void SetPosition(const Vector3& position)
+	{
+		m_position = position;
+	}
+	/// <summary>
+	/// 重力を設定する。
+	/// </summary>
+	/// <param name="g"></param>
+	/// <returns></returns>
+	void SetGravity(const float& g)
+	{
+		m_moveSpeed.y -= g; 
+	}
+	/// <summary>
+	/// 重力を取得
+	/// </summary>
+	/// <returns></returns>
+	const float&  GetGravity()const
+	{
+		return m_moveSpeed.y;
+	}
+	/// <summary>
+	/// 移動速度を取得する。
+	/// </summary>
+	const float& GetMoveSpeed()const
+	{
+		return m_speed;
+	}
+	/// <summary>
+	/// 移動速度を設定する。
+	/// </summary>
+	/// <param name="s">移動速度</param>
+	void  SetMoveSpeed(const float& s)
+	{
+		m_speed = s;
+	}
+	void SetRotation(const Quaternion& r)
+	{
+		m_rotation = r;
+	}
+private:
+	/// <summary>
+	/// 攻撃処理
+	/// </summary>
+	void Punch();
+	/// <summary>
+	/// 攻撃のコリジョン生成
+	/// </summary>
+	void MakePunchCollision();
+	/// <summary>
+	/// 当たり判定処理
+	/// </summary>
+	void Collision();
+	/// <summary>
+	/// ガード処理
+	/// </summary>
+	void Guard();
+	/// <summary>
+	/// ガードのコリジョン生成
+	/// </summary>
+	void MakeGuardCollision();
+	/// <summary>
+	/// プレイヤー移動処理
+	/// </summary>
 	void Move();
+	/// <summary>
+	/// プレイヤー回転処理
+	/// </summary>
 	void Rotation();
+	/// <summary>
+	/// デバッグ用。
+	/// </summary>
 	void Debug();
+	/// <summary>
+	/// UIRender関係のUpdate
+	/// </summary>
 	void UIRenderUpdates();
+	/// <summary>
+	/// UIの処理。
+	/// </summary>
 	void UI();
+	/// <summary>
+	/// ステート管理。
+	/// </summary>
 	void ManageState();
 	/// <summary>
 	/// 共通のステート遷移
@@ -32,18 +124,29 @@ public:
 	/// </summary>
 	void ProcessRunStateTransition();
 	/// <summary>
+	///	パンチステートの遷移
+	/// </summary>
+	void ProcessPunchStateTransition();
+	/// <summary>
+	/// ガードステートの遷移
+	/// </summary>
+	void ProcessGuardStateTransition();
+	/// <summary>
 	/// アニメーションの再生
 	/// </summary>
 	void PlayAnimation();
-	Vector3 Getposition() { return m_position; };
-private:
-	ModelRender m_modelRender;
-	CharacterController	m_characterController;
-	Vector3 m_position;
-	Vector3 m_moveSpeed;
-	Vector3 m_scale = { 1.0f,1.0f,1.0f };
-	Vector3 m_scale2 = { 1.0f,1.0f,1.0f };
-	Vector3 m_mapposition = { -751.0f,344.0f,0.0f };
+	// アニメーションイベント用の関数。
+	void OnAnimationEvent(const wchar_t* clipName, const wchar_t* eventName);
+
+
+	ModelRender				m_modelRender;								//モデルレンダー
+	CharacterController		m_characterController;						//キャラクターコントローラー
+	Vector3					m_position;									//ポジション
+	Vector3					m_moveSpeed;								//動くスピード
+	Vector3					m_scale1 = Vector3::One;					//スケール
+	Vector3					m_scale2 = Vector3::One;
+	Vector3					m_mapposition = { -751.0f,344.0f,0.0f };
+	Vector3					m_forward = Vector3::AxisZ;					//プレイヤーの正面ベクトル。
 	Quaternion m_rotation;
 
 	SpriteRender m_mapRender;
@@ -54,21 +157,29 @@ private:
 	FontRender m_positionrender[3];
 	FontRender m_HPfontRender;
 	FontRender m_MPfontRender;
+	FontRender m_justGuardRender;
 
 	Level2DRender m_level2DRender;
 
-	int m_HP = 8000;
-	int m_MP = 200;
-	int m_InitialHP = 8000;
-	int m_InitialMP = 200;
-	//アニメーションクリップ
+	int						m_HP = 8000;						//体力数値
+	int						m_MP = 200;							//魔力数値
+	int						m_InitialHP = 8000;					//体力初期値
+	int						m_InitialMP = 200;					//魔力初期値
+	bool					m_isUnderAttack = false;			//攻撃中？
+	bool					m_isDefending = false;				//防御中？
+	int                     m_PunchBoneId = -1;                 //「RightHand」ボーンのID。     
+	float					m_speed=360.0f;						//移動速度
+	float					m_guardtimer=0.0f;					//防御タイマー
+	float					m_guardcooltimer = 0.0f;			//連続ガード判定タイマー
+	//アニメーションクリップ	
 	enum EnAnimationClip {
 		enAnimationClip_Idle,				//待機アニメーション。	
 		enAnimationClip_Walk,				//歩きアニメーション。
 		enAnimationClip_Run,				//走りアニメーション。
-		/*enAnimationClip_Attack,				//攻撃アニメーション。
-		enAnimationClip_MagicAttack,		//魔法攻撃アニメーション。
+		enAnimationClip_Punch,				//攻撃アニメーション。
+		enAnimationClip_Guard,				//防御アニメーション。
 		enAnimationClip_Damage,				//被ダメージアニメーション。
+		/*enAnimationClip_MagicAttack,		//魔法攻撃アニメーション。
 		enAnimationClip_Down,				//ダウンアニメーション。
 		enAnimationClip_Winner,				//勝利アニメーション。*/
 		enAnimationClip_Num,				//アニメーションの数。
@@ -79,7 +190,8 @@ private:
 		enPlayerState_Idle,					//待機。
 		enPlayerState_Walk,					//歩き。
 		enPlayerState_Run,					//走る。
-		enPlayerState_Attack,				//攻撃。
+		enPlayerState_Punch,				//攻撃。
+		enPlayerState_Guard,				//防御。
 		enPlayerState_MagicAttack,			//魔法攻撃。
 		enPlayerState_PushLever,			//レバーを押す。
 		enPlayerState_ReceiveDamage,		//ダメ―ジ受けた。

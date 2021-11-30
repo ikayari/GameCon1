@@ -3,7 +3,7 @@
 
 bool Stage::Start()
 {
-	m_modelRender.Init("Assets/modelData/Stage/stage.tkm");
+	m_modelRender.Init("Assets/modelData/dangeon/dangeon_ground.tkm");
 	m_modelRender.SetScale(m_scale);
 	m_modelRender.Update();
 	m_physicsStaticObject.CreateFromModel(m_modelRender.GetModel(), m_modelRender.GetModel().GetWorldMatrix());

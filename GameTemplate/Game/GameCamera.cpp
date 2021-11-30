@@ -18,14 +18,20 @@ bool GameCamera::Start()
 	//カメラのニアクリップとファークリップを設定する。
 	g_camera3D->SetNear(1.0f);
 	g_camera3D->SetFar(100000.0f);
-
+	//ばねカメラの初期化。
+	m_springCamera.Init(
+		*g_camera3D,		//ばねカメラの処理を行うカメラを指定する。
+		1000.0f,			//カメラの移動速度の最大値。
+		true,				//カメラと地形とのあたり判定を取るかどうかのフラグ。trueだとあたり判定を行う。
+		5.0f				//カメラに設定される球体コリジョンの半径。第３引数がtrueの時に有効になる。
+	);
 	return true;
 }
 void GameCamera::Update()
 {
 	//カメラを更新。
 	//注視点を計算する。
-	Vector3 target = m_Player->Getposition();
+	Vector3 target = m_Player->GetPosition();
 	//プレイヤの足元からちょっと上を注視点とする。
 	target.y += 125.0f;
 
@@ -67,5 +73,11 @@ void GameCamera::Update()
 
 	//カメラの更新。
 	g_camera3D->Update();
+	//バネカメラに注視点と視点を設定する。
+	m_springCamera.SetPosition(pos);
+	m_springCamera.SetTarget(target);
+
+	//カメラの更新。
+	m_springCamera.Update();
 
 }

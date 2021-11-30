@@ -6,6 +6,8 @@
 class Player;
 class GameCamera;
 class Stage;
+class Wall;
+class Enemy;
 class Game : public IGameObject
 {
 public:
@@ -19,6 +21,9 @@ private:
 	Player* m_player = nullptr;
 	Stage* m_stage = nullptr;
 	GameCamera* m_gameCamera = nullptr;
+	Enemy* m_enemy = nullptr;
+	Wall* m_wall = nullptr;
+	LevelRender m_levelRender;								//ƒŒƒxƒ‹
 };
 
 
