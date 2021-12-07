@@ -1,15 +1,15 @@
 #pragma once
-#include "tkFile/TknFile.h"
+/*#include "tkFile/TknFile.h"
 #include "AI/PathFinding/NaviMesh.h"
 #include "AI/PathFinding/Path.h"
 #include "AI/PathFinding/PathFinding.h"
 class Player;//プレイヤークラス
 
-class Enemy:public IGameObject
+class Boss :public IGameObject
 {
 public:
-	Enemy() {};
-	~Enemy() ;
+	Boss() {};
+	~Boss();
 	bool Start();
 	void Update();
 	void Render(RenderContext& rc);
@@ -126,10 +126,6 @@ private:
 	/// </summary>
 	void ProcessAttackComboStateTransition();
 	/// <summary>
-	/// 回避のステート遷移処理。
-	/// </summary>
-	void ProcessDodgeStateTransition();
-	/// <summary>
 	/// プレイヤーを探索する。
 	/// </summary>
 	/// <returns>プレイヤーが見つかったらtrue。</returns>
@@ -148,6 +144,7 @@ private:
 		enEnemyState_Attack,				//攻撃。
 		enEnemyState_RotateAttack,			//回転攻撃。
 		enEnemyState_AttackCombo,			//連続攻撃。
+		enEnemyState_Dodge,					//回避。
 		enEnemyState_ReceiveDamage,			//被ダメージ。
 		enEnemyState_Down,					//ダウン。
 	};
@@ -162,7 +159,7 @@ private:
 		enAnimationClip_Down,					//ダウンアニメーション。
 		enAnimationClip_Damage,					//被ダメージアニメーション。
 		enAnimationClip_Backstep,				//バックステップ
-		/*enAnimationClip_MagicAttack,			//魔法攻撃アニメーション。*/
+		//enAnimationClip_MagicAttack,			//魔法攻撃アニメーション。
 		enAnimationClip_Num,					//アニメーションの数。
 	};
 	enum EnBattleState {
@@ -184,7 +181,7 @@ private:
 	Quaternion				m_rotation;									//回転。
 	Vector3					m_scale = Vector3::One;						//大きさ。
 	Vector3					m_moveSpeed;								//移動速度。
-	Player*					m_player = nullptr;							//プレイヤー。
+	Player* m_player = nullptr;							//プレイヤー。
 	SphereCollider			m_sphereCollider;
 	Vector3					m_InitialPosition = Vector3::Zero;			//初期位置。
 	Quaternion				m_InitialRotation = Quaternion::Identity;	//初期回転。
@@ -202,7 +199,7 @@ private:
 	bool m_chase = false;												//追いかける。
 	bool m_return = false;												//帰還
 	bool isEnd;															//パス探索の終了判定
-	float Angle;	
+	float Angle;
 	Vector3 diff = Vector3::Zero;										//プレイヤーまでの距離。
 	Vector3 move = Vector3::Zero;
 	int m_BoneId = -1;													//攻撃判定のボーンID 「Character1_RightHand」
@@ -212,3 +209,4 @@ private:
 	float m_backsteptimer = 0.0f;										//バックステップタイマー
 };
 
+*/

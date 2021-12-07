@@ -6,6 +6,8 @@
 #include "Enemy.h"
 #include "Wall.h"
 
+
+
 bool Game::Start()
 {
 	//レベルを構築する。
@@ -64,6 +66,10 @@ bool Game::Start()
 			}
 			return true;
 		});
+	//空のオブジェクトを作成する。
+	m_skyCube = NewGO<SkyCube>(0, "skycube");
+	//明るさを変える。
+	m_skyCube->SetLuminance(1.0f);
 	m_gameCamera = NewGO<GameCamera>(0, "gameCamera");
 	//ワイヤーフレームを表示　デバッグ用。
 	//PhysicsWorld::GetInstance()->EnableDrawDebugWireFrame();

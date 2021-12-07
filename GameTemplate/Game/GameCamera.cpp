@@ -25,6 +25,8 @@ bool GameCamera::Start()
 		true,				//カメラと地形とのあたり判定を取るかどうかのフラグ。trueだとあたり判定を行う。
 		5.0f				//カメラに設定される球体コリジョンの半径。第３引数がtrueの時に有効になる。
 	);
+	m_quaternion = m_Player->GetRotation();
+	m_quaternion.Apply(m_toCameraPos);
 	return true;
 }
 void GameCamera::Update()
@@ -41,15 +43,14 @@ void GameCamera::Update()
 	float y = g_pad[0]->GetRStickYF();
 
 	//Y軸周りの回転
-	Quaternion qRot;
-	qRot.SetRotationDeg(Vector3::AxisY, 2.6f * x);
-	qRot.Apply(m_toCameraPos);
+	m_quaternion.SetRotationDeg(Vector3::AxisY, 2.6f * x);
+	m_quaternion.Apply(m_toCameraPos);
 	//X軸周りの回転。
 	Vector3 axisX;
 	axisX.Cross(Vector3::AxisY, m_toCameraPos);
 	axisX.Normalize();
-	qRot.SetRotationDeg(axisX, 2.6f * y);
-	qRot.Apply(m_toCameraPos);
+	m_quaternion.SetRotationDeg(axisX, 2.6f * y);
+	m_quaternion.Apply(m_toCameraPos);
 	//カメラの回転の上限をチェックする。
 	//注視点から視点までのベクトルを正規化する。
 	//正規化すると、ベクトルの大きさが１になる。

@@ -27,6 +27,7 @@ bool Player::Start()
 	m_modelRender.Init("Assets/modelData/unityChan.tkm", m_animationClips, enAnimationClip_Num);
 	m_characterController.Init(25.0f, 75.0f, m_position);
 	m_modelRender.SetPosition(m_position);
+	m_modelRender.SetRotation(m_rotation);
 	m_mapRender.Init("Assets/sprite/map.dds", 315.0f, 315.0f);
 	m_playerRender.Init("Assets/sprite/player.dds", 15.0f, 15.0f);
 	//レベルを構築する。
@@ -57,25 +58,25 @@ bool Player::Start()
 			m_HPRender[1].SetPivot(objData.pivot);
 			return true;
 		}
-		else if (objData.EqualObjectName("MP") == true) {
+		else if (objData.EqualObjectName("GP") == true) {
 
 			//レベルのデータを使用して画像を読み込む。
-			m_MPRender[0].Init(objData.ddsFilePath, objData.width, objData.height);
-			m_MPRender[0].SetScale(objData.scale);
-			m_MPRender[0].SetPosition(objData.position);
-			m_MPRender[0].SetPivot(objData.pivot);
-			m_MPRender[1].Init(objData.ddsFilePath, objData.width, objData.height);
-			m_MPRender[1].SetScale(objData.scale);
-			m_MPRender[1].SetPosition(objData.position);
-			m_MPRender[1].SetPivot(objData.pivot);
+			m_GPRender[0].Init(objData.ddsFilePath, objData.width, objData.height);
+			m_GPRender[0].SetScale(objData.scale);
+			m_GPRender[0].SetPosition(objData.position);
+			m_GPRender[0].SetPivot(objData.pivot);
+			m_GPRender[1].Init(objData.ddsFilePath, objData.width, objData.height);
+			m_GPRender[1].SetScale(objData.scale);
+			m_GPRender[1].SetPosition(objData.position);
+			m_GPRender[1].SetPivot(objData.pivot);
 			return true;
 		}
 		return false;
 		});
 	m_HPfontRender.SetPosition({ -540.0f,-365.0f,0.0f });
-	m_MPfontRender.SetPosition({ -540.0f,-440.0f,0.0f });
+	m_GPfontRender.SetPosition({ -540.0f,-440.0f,0.0f });
 	m_HPRender[1].SetMulColor({ 0.0f,0.0f,0.0f,1.0f });
-	m_MPRender[1].SetMulColor({ 0.0f,0.0f,0.0f,1.0f });
+	m_GPRender[1].SetMulColor({ 0.0f,0.0f,0.0f,1.0f });
 	//アニメーションイベント用の関数を設定する。
 	m_modelRender.AddAnimationEvent([&](const wchar_t* clipName, const wchar_t* eventName) {
 		OnAnimationEvent(clipName, eventName);
@@ -94,6 +95,7 @@ void Player::Update()
 	Rotation();//回転処理
 	Debug();//デバッグ用
 	UI();//UI
+	Collision();
 	UIRenderUpdates();//UIRenderアップデート
 	Punch();//殴り処理
 	Guard();//ガード処理
@@ -112,18 +114,18 @@ void Player::UI()
 	m_HPfontRender.SetColor({ 0.0f,0.0f,0.0f,1.0f });
 
 	wchar_t wcsbuf6[256];
-	swprintf_s(wcsbuf6, 256, L"%4d", m_MP);
-	m_MPfontRender.SetText(wcsbuf6);
-	m_MPfontRender.SetScale(1.0f);
-	m_MPfontRender.SetColor({ 0.0f,0.0f,0.0f,1.0f });
+	swprintf_s(wcsbuf6, 256, L"%4d", m_GP);
+	m_GPfontRender.SetText(wcsbuf6);
+	m_GPfontRender.SetScale(1.0f);
+	m_GPfontRender.SetColor({ 0.0f,0.0f,0.0f,1.0f });
 
 	float hp = m_InitialHP - m_HP;//減った体力
 	m_scale1.x = 1.0f - (1.0f / float(m_InitialHP)) * hp;
 	m_HPRender[0].SetScale(m_scale1);
 
-	float mp = m_InitialMP - m_MP;//減った魔力
-	m_scale2.x = 1.0f - (1.0f / float(m_InitialMP)) * mp;
-	m_MPRender[0].SetScale(m_scale2);
+	float gp = m_InitialGP - m_GP;//減った魔力
+	m_scale2.x = 1.0f - (1.0f / float(m_InitialGP)) * gp;
+	m_GPRender[0].SetScale(m_scale2);
 	
 }
 void Player::ManageState() 
@@ -139,14 +141,14 @@ void Player::ManageState()
 		//歩きステートのステート遷移処理。
 		ProcessWalkStateTransition();
 		//移動速度を設定。
-		SetMoveSpeed(620.0f);
+		SetMoveSpeed(660.0f);
 		break;
 		//走りステートの時。
 	case enPlayerState_Run:
 		//走りステートのステート遷移処理。
 		ProcessRunStateTransition();
 		//移動速度を設定。
-		SetMoveSpeed(1200.0f);
+		SetMoveSpeed(1000.0f);
 		break;
 	case enPlayerState_Punch:
 		//パンチステートのステート遷移処理。
@@ -158,12 +160,13 @@ void Player::ManageState()
 		//ガードステートのステート遷移処理
 		ProcessGuardStateTransition();
 		//移動速度を設定
-		SetMoveSpeed(45.0f);
+		SetMoveSpeed(100.0f);
 		break;
 	case enPlayerState_ReceiveDamage:
 		//被ダメージ時のステート遷移処理
-
-		
+		ProcessReceiveDamageStateTransition();
+		//移動速度を設定
+		SetMoveSpeed(100.0f);
 		break;
 	default:
 		break;
@@ -171,10 +174,21 @@ void Player::ManageState()
 }
 void Player::Collision()
 {
-	//被ダメージ、ダウン中、クリア時はダメージ判定をしない。
+	//ガード成功時0.7秒の無敵。
+	if (m_SuccessDefence == true)
+	{
+		m_guardtimer += g_gameTime->GetFrameDeltaTime();
+		if (m_guardtimer >= 0.7f)
+		{
+			m_SuccessDefence = false;
+
+		}
+	}
+	//被ダメージ、ダウン中、クリア時、ガード成功時はダメージ判定をしない。
 	if (m_playerState == enPlayerState_ReceiveDamage ||
 		m_playerState == enPlayerState_Down ||
-		m_playerState == enPlayerState_Clear)
+		m_playerState == enPlayerState_Clear||
+		m_SuccessDefence == true)
 	{
 		return;
 	}
@@ -186,26 +200,47 @@ void Player::Collision()
 		//コリジョンとキャラコンが衝突したら。
 		if (collision->IsHit(m_characterController))
 		{
-			//HPを減らす。
-			m_HP -= 50;
+			
+			//防御中なら
+			if (m_isDefending == true&&m_SuccessDefence!=true)
+			{
+				if (m_GP - 25 < 0)
+				{
+					m_GP = 0.0f;
+					m_HP += m_GP - 50;
+				}
+				else
+				{
+					//防御値減少
+					m_GP -= 25;
+					m_SuccessDefence = true;
+					m_guardtimer = 0.0f;
+				}
+			}
+			else
+			{
+				//HPを減らす。
+				m_HP -= 50;
+			}
+
+
 			///HPが０になったら。
 			if (m_HP <= 0)
 			{
-				//ダウンさせる。
+				//ダウン
 				m_playerState = enPlayerState_Down;
 				m_HP = 0;
 			}
-			//HPが０ではなかったら。
+			else if (m_SuccessDefence == true)
+			{
+
+			}
+			//HPが0でないなら
 			else
 			{
-				//被ダメージリアクションを指せる。
+				//被ダメージリアクション
 				m_playerState = enPlayerState_ReceiveDamage;
 			}
-			//効果音を再生する。
-			SoundSource* se = NewGO<SoundSource>(0);
-			se->Init(7);
-			se->Play(false);
-			se->SetVolume(0.7f);
 			return;
 		}
 	}
@@ -249,7 +284,11 @@ void Player::ProcessCommonStateTransition()
 		m_isDefending = true;
 		return;
 	}
-	//Bボタンを押したら殴り。
+	else
+	{
+		m_isDefending = false;
+	}
+	//RB1ボタンを押したら殴り。
 	if (g_pad[0]->IsTrigger(enButtonRB1))
 	{
 		m_playerState = enPlayerState_Punch;
@@ -258,8 +297,8 @@ void Player::ProcessCommonStateTransition()
 	//移動しているとき
 	if (fabsf(m_moveSpeed.x) >= 0.001f || fabsf(m_moveSpeed.z) >= 0.001f)
 	{
-		//Aボタンを押すと走る。
-		if (g_pad[0]->IsPress(enButtonA))
+		//Bボタンを押すと走る。
+		if (g_pad[0]->IsPress(enButtonB))
 		{
 			m_playerState = enPlayerState_Run;
 			return;
@@ -298,7 +337,14 @@ void Player::ProcessRunStateTransition()
 {
 	ProcessCommonStateTransition();
 }
-
+void Player::ProcessReceiveDamageStateTransition()
+{
+	if (m_modelRender.IsPlayingAnimation() == false)
+	{
+		//ステートを遷移する。
+		ProcessCommonStateTransition();
+	}
+}
 void Player::ProcessPunchStateTransition() 
 {
 	//攻撃アニメーションの再生が終わったら。
@@ -333,7 +379,7 @@ void Player::PlayAnimation()
 		//待機ステートの時。
 	case enPlayerState_Idle:
 		//待機アニメーションを再生。
-		m_modelRender.PlayAnimation(enAnimationClip_Idle, 0.5f);
+		m_modelRender.PlayAnimation(enAnimationClip_Idle, 0.2f);
 		break;
 		//歩きステートの時。
 	case enPlayerState_Walk:
@@ -349,12 +395,16 @@ void Player::PlayAnimation()
 		break;
 
 	case enPlayerState_Punch:
-		m_modelRender.SetAnimationSpeed(1.0f);
+		m_modelRender.SetAnimationSpeed(1.5f);
 		m_modelRender.PlayAnimation(enAnimationClip_Punch, 0.1f);
 		break;
 	case enPlayerState_Guard:
 		m_modelRender.SetAnimationSpeed(1.0f);
-		m_modelRender.PlayAnimation(enAnimationClip_Guard);
+		m_modelRender.PlayAnimation(enAnimationClip_Guard,0.01f);
+		break;
+	case enPlayerState_ReceiveDamage:
+		m_modelRender.SetAnimationSpeed(2.5f);
+		m_modelRender.PlayAnimation(enAnimationClip_Damage,0.05f);
 	default:
 		break;
 	}
@@ -367,9 +417,9 @@ void Player::UIRenderUpdates()
 	m_mapRender.Update();
 	m_playerRender.Update();
 	m_HPRender[1].Update();
-	m_MPRender[1].Update();
+	m_GPRender[1].Update();
 	m_HPRender[0].Update();
-	m_MPRender[0].Update();
+	m_GPRender[0].Update();
 	m_level2DRender.Update();
 }
 void Player::Move()
@@ -452,11 +502,11 @@ void Player::Render(RenderContext& rc)
 
 	m_level2DRender.Draw(rc);
 	m_HPRender[1].Draw(rc);
-	m_MPRender[1].Draw(rc);
+	m_GPRender[1].Draw(rc);
 	m_HPRender[0].Draw(rc);
-	m_MPRender[0].Draw(rc);
+	m_GPRender[0].Draw(rc);
 	m_HPfontRender.Draw(rc);
-	m_MPfontRender.Draw(rc);
+	m_GPfontRender.Draw(rc);
 }
 void Player::Punch()
 {
@@ -494,21 +544,31 @@ void Player::MakePunchCollision()
 }
 void Player::Guard()
 {
+
 	//ガード中でないなら、処理をしない。
 	if (m_playerState != enPlayerState_Guard)
 	{
-		m_guardcooltimer+=g_gameTime->GetFrameDeltaTime();//クールタイマーを起動。
-		m_guardtimer = 0;//ガード時間をリセット。
+		m_guardcooltimer += g_gameTime->GetFrameDeltaTime();//クールタイマーを起動。
+		if (m_guardcooltimer >= 5.0f&&m_GP<m_InitialGP)
+		{
+			
+			if (m_GP + 10 >= m_InitialGP)
+			{
+				m_GP = m_InitialGP;
+			}
+			else
+			{
+				m_GP += 10;
+				m_guardcooltimer = 0.0f;
+			}
+		}
 		return;
 	}
 	//ガード中であれば。
 	if (m_isDefending == true)
 	{
-		//ガード用のコリジョンを作成する。
-		MakeGuardCollision();
 		//攻撃用のコリジョンの生成を止める。
 		m_isUnderAttack = false;
-		m_guardtimer += g_gameTime->GetFrameDeltaTime();//ガード時間を計測。
 		m_guardcooltimer = 0;//クールタイマーをリセット。
 	}
 }
@@ -519,7 +579,7 @@ void Player::MakeGuardCollision()
 
 	Vector3 collisionPosition = m_position;
 	//座標をプレイヤーの少し前、少し上側に設定
-	collisionPosition += m_forward * 25.0f;
+	collisionPosition += m_forward * 35.0f;
 	collisionPosition.y += 90.0f;
 	//コリジョンからプレイヤーまでのベクトルを計算
 	Vector3 topos = collisionPosition - m_position;

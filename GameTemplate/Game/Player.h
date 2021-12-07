@@ -1,5 +1,7 @@
 #pragma once
 #include "level2DRender/Level2DRender.h"
+
+
 class Player:public IGameObject
 {
 public:
@@ -58,9 +60,21 @@ public:
 	{
 		m_speed = s;
 	}
+	/// <summary>
+	/// 回転を設定する。
+	/// </summary>
+	/// <param name="r">回転</param>
 	void SetRotation(const Quaternion& r)
 	{
 		m_rotation = r;
+	}
+	/// <summary>
+	/// 座標を取得する。
+	/// </summary>
+	/// <returns>座標。</returns>
+	const Quaternion& GetRotation() const
+	{
+		return m_rotation;
 	}
 private:
 	/// <summary>
@@ -132,6 +146,10 @@ private:
 	/// </summary>
 	void ProcessGuardStateTransition();
 	/// <summary>
+	/// 被ダメージステートの遷移
+	/// </summary>
+	void ProcessReceiveDamageStateTransition();
+	/// <summary>
 	/// アニメーションの再生
 	/// </summary>
 	void PlayAnimation();
@@ -151,26 +169,27 @@ private:
 
 	SpriteRender m_mapRender;
 	SpriteRender m_playerRender;
-	SpriteRender m_MPRender[2];
+	SpriteRender m_GPRender[2];
 	SpriteRender m_HPRender[2];
 
 	FontRender m_positionrender[3];
 	FontRender m_HPfontRender;
-	FontRender m_MPfontRender;
+	FontRender m_GPfontRender;
 	FontRender m_justGuardRender;
 
 	Level2DRender m_level2DRender;
 
 	int						m_HP = 8000;						//体力数値
-	int						m_MP = 200;							//魔力数値
+	int						m_GP = 200;							//防御数値
 	int						m_InitialHP = 8000;					//体力初期値
-	int						m_InitialMP = 200;					//魔力初期値
+	int						m_InitialGP = 200;					//防御初期値
 	bool					m_isUnderAttack = false;			//攻撃中？
 	bool					m_isDefending = false;				//防御中？
+	bool					m_SuccessDefence = false;			//防御成功？
 	int                     m_PunchBoneId = -1;                 //「RightHand」ボーンのID。     
 	float					m_speed=360.0f;						//移動速度
 	float					m_guardtimer=0.0f;					//防御タイマー
-	float					m_guardcooltimer = 0.0f;			//連続ガード判定タイマー
+	float					m_guardcooltimer=0.0f;				//連続ガード判定タイマー
 	//アニメーションクリップ	
 	enum EnAnimationClip {
 		enAnimationClip_Idle,				//待機アニメーション。	

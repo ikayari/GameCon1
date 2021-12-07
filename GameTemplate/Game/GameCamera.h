@@ -20,4 +20,5 @@ private:
 	Quaternion m_quaternion;
 	Game* game;
 	SpringCamera m_springCamera;	//‚Î‚ËƒJƒƒ‰B
+
 };

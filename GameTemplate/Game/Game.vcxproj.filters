@@ -15,8 +15,8 @@
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameCamera.cpp" />
-    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Wall.cpp" />
+    <ClCompile Include="Enemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

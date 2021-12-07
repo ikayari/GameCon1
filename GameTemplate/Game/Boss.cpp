@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "Enemy.h"
-#include "Player.h"
+//#include "Boss.h"
+//#include "Player.h"
 
-#include <time.h>
+//#include <time.h>
 
-bool Enemy::Start()
+/*bool Boss::Start()
 {
 	fontRender.SetPosition(0.0f, 0.0f, 0.0f);
 	fontRender2.SetPosition(-40.0f, 0.0f, 0.0f);
@@ -29,7 +29,7 @@ bool Enemy::Start()
 	m_animationClips[enAnimationClip_Down].SetLoopFlag(false);
 
 	//モデルレンダーの読みこみ
-	m_modelRender.Init("Assets/modelData/Enem/shadownity.tkm", m_animationClips, enAnimationClip_Num);
+	m_modelRender.Init("Assets/modelData/Enemy/shadownity.tkm", m_animationClips, enAnimationClip_Num);
 	m_modelRender.SetPosition(m_position);
 	m_modelRender.SetRotation(m_rotation);
 	//アニメーションイベント用の関数
@@ -52,14 +52,14 @@ bool Enemy::Start()
 
 	return true;
 }
-Enemy::~Enemy()
+Boss::~Boss()
 {
 
 }
-void Enemy::Update()
+void Boss::Update()
 {
-	
-	
+
+
 	//追跡ステート管理
 	ManageBattleState();
 	//ステート管理
@@ -76,13 +76,14 @@ void Enemy::Update()
 	m_modelRender.Update();
 	wchar_t wcsbuf[256];
 	swprintf_s(wcsbuf, 256, L"%d", m_hp);
+
 	//表示するテキストを設定。
 	fontRender2.SetText(wcsbuf);
 }
-void Enemy::Rotation()
+void Boss::Rotation()
 {
-	if (m_battleState!=enBattleState_Chase&&
-		m_battleState!=enBattleState_Attack) {
+	if (m_battleState != enBattleState_Chase &&
+		m_battleState != enBattleState_Attack) {
 
 		return;
 	}
@@ -102,7 +103,7 @@ void Enemy::Rotation()
 	m_forward = Vector3::AxisZ;
 	m_rotation.Apply(m_forward);
 }
-void Enemy::ManageState()
+void Boss::ManageState()
 {
 	switch (m_enemyState)
 	{
@@ -137,11 +138,11 @@ void Enemy::ManageState()
 		break;
 	}
 }
-void Enemy::Attack()
+void Boss::Attack()
 {
 	//攻撃ステートでないなら処理をしない。
 	if (m_enemyState != enEnemyState_Attack &&
-		m_enemyState != enEnemyState_RotateAttack&&
+		m_enemyState != enEnemyState_RotateAttack &&
 		m_enemyState != enEnemyState_AttackCombo)
 	{
 		return;
@@ -166,12 +167,12 @@ void Enemy::Attack()
 		}
 	}
 }
-void Enemy::ManageBattleState()
+void Boss::ManageBattleState()
 {
 	if (m_enemyState != enEnemyState_Down &&
 		m_enemyState != enEnemyState_ReceiveDamage &&
 		m_enemyState != enEnemyState_Attack &&
-		m_enemyState != enEnemyState_RotateAttack&&
+		m_enemyState != enEnemyState_RotateAttack &&
 		m_enemyState != enEnemyState_AttackCombo)
 	{
 		switch (m_battleState)
@@ -182,12 +183,12 @@ void Enemy::ManageBattleState()
 			m_return = false;
 			break;
 		case enBattleState_Chase:
-				MoveChara(250.0f);
-				if (m_characterController.IsOnGround()) {
-					//地面についた。
-					//重力を0にする。
-					m_moveSpeed.y = 0.0f;
-				}
+			MoveChara(250.0f);
+			if (m_characterController.IsOnGround()) {
+				//地面についた。
+				//重力を0にする。
+				m_moveSpeed.y = 0.0f;
+			}
 			if (SearchPlayer() == false)
 			{
 				//見失ったら
@@ -222,12 +223,12 @@ void Enemy::ManageBattleState()
 					//攻撃ステートに遷移する。
 					m_battleState = enBattleState_Attack;
 				}*/
-			}
+	/*		}
 			fontRender.SetText(L"発見！");
 			break;
 		case enBattleState_Waitingtomove:
 			if (SearchPlayer() == true)
-			{
+			{*
 				//見つけたら追跡再開する。
 				m_battleState = enBattleState_Chase;
 				break;
@@ -335,7 +336,7 @@ void Enemy::ManageBattleState()
 					return;
 				}
 				//乱数が50未満なら。
-				else if(ram>33) 
+				else if (ram > 33)
 				{
 					//回転攻撃ステートに遷移する。
 					m_enemyState = enEnemyState_Attack;
@@ -346,7 +347,7 @@ void Enemy::ManageBattleState()
 					m_enemyState = enEnemyState_AttackCombo;
 					return;
 				}
-				
+
 			}
 			else if (IsCanAttack(1) == false)
 			{
@@ -366,7 +367,7 @@ void Enemy::ManageBattleState()
 			side.Cross(m_forward, Vector3::AxisY);
 			side.Normalize();
 			MoveChara(55.0f,side);*/
-			break;
+	/*		break;
 		case enBattleState_BackStep:
 			fontRender.SetText(L"回避～！");
 			MoveChara(-500.0f);
@@ -384,10 +385,10 @@ void Enemy::ManageBattleState()
 
 		}
 
-	
+
 	}
 }
-void Enemy::PlayAnimation()
+void Boss::PlayAnimation()
 {
 	m_modelRender.SetAnimationSpeed(1.0f);
 	switch (m_enemyState)
@@ -438,7 +439,7 @@ void Enemy::PlayAnimation()
 		break;
 	}
 }
-void Enemy::MoveChara(float s)
+void Boss::MoveChara(float s)
 {
 	//エネミーからプレイヤーに向かうベクトルを計算する。
 	diff = m_player->GetPosition() - m_position;
@@ -450,7 +451,7 @@ void Enemy::MoveChara(float s)
 	m_modelRender.SetPosition(m_position);
 
 }
-void Enemy::MoveChara(float s,Vector3 v)
+void Boss::MoveChara(float s, Vector3 v)
 {
 	v.Normalize();
 	//移動速度を設定する。
@@ -458,12 +459,12 @@ void Enemy::MoveChara(float s,Vector3 v)
 	m_position = m_characterController.Execute(m_moveSpeed, g_gameTime->GetFrameDeltaTime());
 	m_modelRender.SetPosition(m_position);
 }
-void Enemy::ProcessCommonStateTransition()
+void Boss::ProcessCommonStateTransition()
 {
 
 	//プレイヤーを見つけたら。
 	if (SearchPlayer() == true)
-	{		
+	{
 		//追跡ステートに遷移する。
 		m_enemyState = enEnemyState_Chase;
 
@@ -475,13 +476,13 @@ void Enemy::ProcessCommonStateTransition()
 		return;
 	}
 }
-void Enemy::ProcessIdleStateTransition()
+void Boss::ProcessIdleStateTransition()
 {
 	//共通のステート遷移
 	ProcessCommonStateTransition();
 }
 
-void Enemy::ProcessChaseStateTransition()
+void Boss::ProcessChaseStateTransition()
 {
 	if (m_chase == false)
 	{
@@ -489,7 +490,7 @@ void Enemy::ProcessChaseStateTransition()
 		m_chase = true;
 	}
 }
-void Enemy::ProcessReceiveDamageStateTransition()
+void Boss::ProcessReceiveDamageStateTransition()
 {
 	m_Attack = false;
 	m_AttackMove = false;
@@ -502,13 +503,13 @@ void Enemy::ProcessReceiveDamageStateTransition()
 		m_backsteptimer = 0.0f;
 	}
 }
-void Enemy::ProcessDownStateTransition()
+void Boss::ProcessDownStateTransition()
 {
 	m_Attack = false;
 	m_AttackMove = false;
 	m_characterController.RemoveRigidBoby();
 }
-void Enemy::ProcessRotateAttackStateTransition()
+void Boss::ProcessRotateAttackStateTransition()
 {
 	//攻撃アニメーションの再生が終わったら。
 	if (m_modelRender.IsPlayingAnimation() == false)
@@ -518,7 +519,7 @@ void Enemy::ProcessRotateAttackStateTransition()
 		m_backsteptimer = 0.0f;
 	}
 }
-void Enemy::ProcessAttackStateTransition()
+void Boss::ProcessAttackStateTransition()
 {
 	//攻撃アニメーションの再生が終わったら。
 	if (m_modelRender.IsPlayingAnimation() == false)
@@ -528,7 +529,7 @@ void Enemy::ProcessAttackStateTransition()
 		m_backsteptimer = 0.0f;
 	}
 }
-void Enemy::ProcessAttackComboStateTransition()
+void Boss::ProcessAttackComboStateTransition()
 {
 	//攻撃アニメーションの再生が終わったら。
 	if (m_modelRender.IsPlayingAnimation() == false)
@@ -538,7 +539,7 @@ void Enemy::ProcessAttackComboStateTransition()
 		m_backsteptimer = 0.0f;
 	}
 }
-void Enemy::Collision()
+void Boss::Collision()
 {
 	//被ダメージ時は
 	//当たり判定処理はしない。
@@ -574,13 +575,14 @@ void Enemy::Collision()
 		}
 	}
 }
-void Enemy::Render(RenderContext& rc)
+void Boss::Render(RenderContext& rc)
 {
 	m_modelRender.Draw(rc);
 
 	fontRender.Draw(rc);
 	fontRender2.Draw(rc);
 }
+
 //衝突したときに呼ばれる関数オブジェクト(壁用)
 struct SweepResultWall :public btCollisionWorld::ConvexResultCallback
 {
@@ -600,7 +602,7 @@ struct SweepResultWall :public btCollisionWorld::ConvexResultCallback
 		return 0.0f;
 	}
 };
-const bool Enemy::SearchPlayer() const
+const bool Boss::SearchPlayer() const
 {
 	Vector3 playerPosition = m_player->GetPosition();
 	Vector3 diff = playerPosition - m_position;
@@ -641,7 +643,7 @@ const bool Enemy::SearchPlayer() const
 	//プレイヤー見つけたフラグをtrueに。
 	return true;
 }
-void Enemy::OnAnimationEvent(const wchar_t* clipName, const wchar_t* eventName)
+void Boss::OnAnimationEvent(const wchar_t* clipName, const wchar_t* eventName)
 {
 	//キーの名前が[attack_start]の時。
 	if (wcscmp(eventName, L"attack_start") == 0) {
@@ -664,7 +666,7 @@ void Enemy::OnAnimationEvent(const wchar_t* clipName, const wchar_t* eventName)
 		m_AttackMove = false;
 	}
 }
-void Enemy::MakeAttackCollision()
+void Boss::MakeAttackCollision()
 {
 	//攻撃当たり判定用のコリジョンオブジェクトを作成する。
 	auto collisionObject = NewGO<CollisionObject>(0);
@@ -676,10 +678,10 @@ void Enemy::MakeAttackCollision()
 	collisionObject->SetName("enemy_attack");
 }
 
-const bool Enemy::IsCanAttack(const int n) const
+const bool Boss::IsCanAttack(const int n) const
 {
 	Vector3 diff = m_player->GetPosition() - m_position;
-	//エネミーとプレイヤーの距離が近かったら。
+	//ボスとプレイヤーの距離が近かったら。
 	if (n == 0)
 	{
 		if (diff.LengthSq() <= 150.0f * 100.0f)
@@ -698,3 +700,5 @@ const bool Enemy::IsCanAttack(const int n) const
 	//攻撃できない。
 	return false;
 }
+
+*/
